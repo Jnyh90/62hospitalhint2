@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>함성병원 사내 시스템</title>
+<style>
+:root{--bg:#eef2f5;--panel:#fff;--side:#12333f;--side-t:#cfe3ea;--ink:#1c2b33;--mute:#6b7c86;--line:#d5dee3;--acc:#0e7c86;--me:#d7f0f2;--warn:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1417;--panel:#162127;--side:#0a1d25;--side-t:#9fbcc6;--ink:#dbe7ec;--mute:#7f949e;--line:#26363e;--acc:#3fb6c0;--me:#1d3b40;--warn:#ff6b5b}}
+:root[data-theme="dark"]{--bg:#0d1417;--panel:#162127;--side:#0a1d25;--side-t:#9fbcc6;--ink:#dbe7ec;--mute:#7f949e;--line:#26363e;--acc:#3fb6c0;--me:#1d3b40;--warn:#ff6b5b}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
+#login{height:100%;display:flex;align-items:center;justify-content:center}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:32px;width:min(360px,92vw);text-align:center}
+.card h1{margin:0 0 4px;font-size:22px;color:var(--acc)}
+.card p{color:var(--mute);margin:4px 0 18px;font-size:13px}
+input,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px;width:100%}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:10px 16px;background:var(--acc);color:#fff;margin-top:10px;width:100%}
+button.sm{width:auto;margin:0 0 0 8px;padding:5px 10px;font-size:12px}
+button.x{width:auto;margin:0 0 0 6px;padding:1px 7px;font-size:12px;background:var(--warn)}
+button.gray{background:var(--mute)}
+#err{color:var(--warn);font-size:13px;min-height:18px;margin-top:8px}
+#app{display:none;height:100%;flex-direction:column}
+#app.on{display:flex}
+header{display:flex;justify-content:space-between;align-items:center;padding:8px 18px;background:var(--panel);border-bottom:1px solid var(--line);font-size:13px;color:var(--mute)}
+header b{color:var(--acc);font-size:16px}
+.main{flex:1;display:flex;min-height:0}
+nav{width:84px;background:var(--side);display:flex;flex-direction:column;padding-top:8px}
+nav button{background:none;color:var(--side-t);border-radius:0;margin:0;padding:14px 4px;font-size:12px;width:100%}
+nav button.act{background:rgba(255,255,255,.12);color:#fff;border-left:3px solid var(--acc)}
+nav i{display:block;font-style:normal;font-size:22px}
+section{display:none;flex:1;min-width:0}
+section.on{display:flex}
+.list{width:240px;border-right:1px solid var(--line);background:var(--panel);overflow-y:auto;padding-bottom:10px}
+.list>button{width:calc(100% - 20px);margin:10px}
+.item{padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.item small{display:block;color:var(--mute);margin-top:2px}
+.item.act{background:var(--me)}
+.view{flex:1;overflow-y:auto;padding:18px;min-width:0}
+.msg{max-width:78%;margin:10px 0;display:flex;flex-direction:column}
+.msg.me{margin-left:auto;align-items:flex-end}
+.msg .who{font-size:12px;color:var(--mute);margin-bottom:3px}
+.msg .b{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 13px}
+.msg.me .b{background:var(--me)}
+.day{text-align:center;color:var(--mute);font-size:12px;margin:14px 0}
+h2{margin:0 0 12px;font-size:19px;display:flex;align-items:center;justify-content:space-between}
+table{border-collapse:collapse;width:100%;margin-bottom:16px;background:var(--panel)}
+td,th{border:1px solid var(--line);padding:8px 10px;text-align:left;font-size:14px;vertical-align:top}
+th{background:var(--bg);color:var(--mute);font-weight:600;width:110px}
+.red{background:var(--ink);color:var(--ink);border-radius:3px;user-select:none}
+.empty{color:var(--mute)}
+.ed{display:none}
+body.edit .ed{display:revert}
+body.edit button.ed,body.edit .row.ed{display:block}
+body.edit h2 .ed,body.edit .msg .ed,body.edit .day .ed{display:inline-block}
+.row{display:flex;gap:8px;margin-top:10px}
+.row button{margin:0;width:auto;white-space:nowrap}
+.form label{display:block;font-size:12px;color:var(--mute);margin:10px 0 3px}
+.hint{font-size:12px;color:var(--mute);margin-top:6px}
+#memoBox{display:flex;flex-direction:column;width:100%;padding:18px}
+#memoBox textarea{flex:1;resize:none;line-height:1.7}
+#io,#dlg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);align-items:center;justify-content:center;z-index:20}
+#dlg{z-index:30}
+#io>div,#dlg>div{background:var(--panel);padding:18px;border-radius:12px;width:min(520px,92vw)}
+body.edit button.sm.ed{display:inline-block}
+#toast{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 18px;border-radius:20px;z-index:40;font-size:14px}
+#io textarea{height:240px}
+@media (max-width:720px){.list{width:130px}nav{width:62px}.msg{max-width:92%}}
+</style>
+</head>
+<body>
+
+<div id="login"><div class="card">
+  <h1>🏥 함성병원</h1>
+  <p>직원 전용 사내 시스템 · 접속 계정: 박춘배</p>
+  <input id="pw" type="password" placeholder="비밀번호 4자리" maxlength="8" autocomplete="off">
+  <button id="go">로그인</button>
+  <div id="err"></div>
+  <p style="margin:10px 0 0;font-size:12px">힌트: 개원기념일 (월일 4자리)</p>
+</div></div>
+
+<div id="app">
+  <header><span><b>함성병원 인트라넷</b> &nbsp;박춘배 전문의 <small id="mode" style="margin-left:8px">💾 이 기기에만 저장</small></span>
+    <span><button class="sm ed" id="loc">이 기기 저장본</button><button class="sm ed" id="exp">내보내기</button><button class="sm ed" id="imp">가져오기</button><button class="sm gray" id="edt">✏️ 편집 모드</button></span></header>
+  <div class="main">
+    <nav>
+      <button data-t="chat" class="act"><i>💬</i>메신저</button>
+      <button data-t="rec"><i>📋</i>진료기록</button>
+      <button data-t="memo"><i>📝</i>내 메모</button>
+    </nav>
+    <section id="chat" class="on"><div class="list" id="clist"></div><div class="view" id="cview"></div></section>
+    <section id="rec"><div class="list" id="rlist"></div><div class="view" id="rview"></div></section>
+    <section id="memo"><div class="list" id="mlist"></div><div id="memoBox" style="flex:1;min-width:0;width:auto">
+      <input id="mt" placeholder="메모 제목">
+      <textarea id="note" placeholder="단서를 여기에 적어두세요..." style="margin-top:8px"></textarea>
+      <div class="row"><span class="hint" style="flex:1">자동으로 저장됩니다.</span><button class="x" id="mdel">이 메모 삭제</button></div></div></section>
+  </div>
+</div>
+
+<div id="dlg"><div><b id="dt"></b><div id="df"></div><div class="row"><button id="dok">확인</button><button class="gray" id="dno">취소</button></div></div></div>
+<div id="toast"></div>
+<div id="io"><div>
+  <b id="iot"></b>
+  <textarea id="iota"></textarea>
+  <div class="row"><button id="iook">적용</button><button class="gray" id="ioc">닫기</button></div>
+</div></div>
+
+<script>
+var PASSWORD="0404", ADMIN="0000", KEY="hospital-data-v1";
+var $=function(s){return document.querySelector(s)};
+var S=null;
+var SEED={"chats": [{"id": "mwx4mbdumoi", "name": "수간호사", "sub": "이하은", "log": [{"id": "smwx4mbdumoi_0", "day": "2026. 11. 28"}, {"id": "smwx4mbdumoi_1", "s": "이하은", "t": "원장님 101호 김채민 환자 D/C 수속 완료 했습니다."}, {"id": "smwx4mbdumoi_2", "s": "박춘배", "t": "확인"}, {"id": "smwx4mbdumoi_3", "s": "이하은", "t": "그리고 방금 1층에 Annual physical examination 오시던 환자분 중에 희귀병 갖고있던 분 오셔서 확인해주세요"}, {"id": "smwx4mbdumoi_4", "day": "2026. 12. 17"}, {"id": "smwx4mbdumoi_5", "s": "박춘배", "t": "수간, 내일 수술 들어가는데 희귀병이기도 하고 실험을 해야해서 아직 승인되지 않은 불법 치료법으로 수술 할 예정이다. 앞으로 계속 일하고 싶다면 입 닫고 수술해야할거야."}, {"id": "smwx4mbdumoi_6", "s": "이하은", "t": "네 확인했습니다"}, {"id": "smwx4mbdumoi_7", "day": "2026. 12. 19"}]}, {"id": "mwx4z4q1o19", "name": "간호팀", "sub": "", "log": [{"id": "smwx4z4q1o19_0", "day": "2026. 12. 19"}, {"id": "smwx4z4q1o19_1", "s": "박춘배", "t": "18일 수술 실패하였습니다. 외부에 누설 금지입니다. 수간과 합의 후에 보고하겠습니다."}, {"id": "smwx4z4q1o19_2", "s": "서수아", "t": "네"}, {"id": "smwx4z4q1o19_3", "s": "이하은", "t": "확인 했습니다."}, {"id": "smwx4z4q1o19_4", "s": "이지연", "t": "넵"}, {"id": "smwx4z4q1o19_5", "day": "2026. 12. 21"}, {"id": "smwx4z4q1o19_6", "s": "박춘배", "t": "당분간은 외진 받을 시 개인정보 확인 꼼꼼히 해주세요. 외부의 잠입을 방지하기 위함입니다."}]}, {"id": "mwx53hvfnx9", "name": "수술실", "sub": "", "log": [{"id": "smwx53hvfnx9_0", "day": "2026. 12. 16"}, {"id": "smwx53hvfnx9_1", "s": "박춘배", "t": "18일 희귀병환자 수술 건은 아직 공개되지 않았고 승인되지 않은 불법치료법으로 진행합니다. 이에 대해 누설 시 책임은 본인에게 있습니다. 자세한건 2층 수술실에서 내일 사전안내 드리겠습니다."}, {"id": "smwx53hvfnx9_2", "s": "이하은", "t": "네..? 알겠습니다."}, {"id": "smwx53hvfnx9_3", "s": "서수아", "t": "알겠습니다"}, {"id": "smwx53hvfnx9_4", "s": "호 수", "t": "내일 모이면 될까요?"}]}], "patients": [{"id": "mwx5792tfch", "name": "함 성", "no": "004", "room": "404호", "info": "남성 / 13세", "dx": "공개되지 않은 희귀병", "rx": "18일 수술 예정", "notes": ["수상한 발작, 기절상태, 12월 2일부터 가끔 눈을 깜빡임"]}, {"id": "mwx5be1sauc", "name": "함 성", "no": "004", "room": "404호", "info": "남성 / 13세", "dx": "사망", "rx": "수술 중 사망", "notes": ["불법 치료 기술 '스크로바티'로 진행한 수술에서 사망."]}, {"id": "mwx6o4penvs", "name": "황지훈", "no": "048", "room": "506호", "info": "남성 / 35세", "dx": "장염", "rx": "", "notes": []}, {"id": "mwx6p46mlwo", "name": "이리윤", "no": "031", "room": "302호", "info": "여성 / 8세", "dx": "단순감기", "rx": "해열제", "notes": []}]};
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S||!S.chats||!S.patients||(!S.chats.length&&!S.patients.length))S=JSON.parse(JSON.stringify(SEED));
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+var DB=null,lastRoom=null,formFor=null;
+function wr(p){return p.catch(function(){toast("저장 권한이 없어요. 편집자 또는 기여자로 초대됐는지 확인하세요.")})}
+function addChat(c){if(DB)wr(DB.collection("chats").doc(c.id).set({name:c.name,sub:c.sub||"",ts:Date.now()}));else{S.chats.push(c);save();renderChatList();renderChat()}}
+function delChat(c){if(DB){c.log.forEach(function(m){DB.collection("msgs").doc(m.id).delete()});wr(DB.collection("chats").doc(c.id).delete())}else{S.chats=S.chats.filter(function(x){return x!==c});save();renderChatList();renderChat()}}
+function addMsg(c,m){m.id=uid();if(DB)wr(DB.collection("msgs").doc(m.id).set({chat:c.id,s:m.s||"",t:m.t||"",day:m.day||"",ts:m.ts||Date.now()}));else{c.log.push(m);save();renderChat()}}
+function delMsg(c,m){if(DB)wr(DB.collection("msgs").doc(m.id).delete());else{c.log.splice(c.log.indexOf(m),1);save();renderChat()}}
+function putPat(p){if(DB)wr(DB.collection("patients").doc(p.id).set({name:p.name||"",no:p.no||"",room:p.room||"",info:p.info||"",dx:p.dx||"",rx:p.rx||"",notes:p.notes||[],ts:p.ts||Date.now()}));else{if(S.patients.indexOf(p)<0)S.patients.push(p);save();renderRecList()}}
+function renameChat(c){if(DB)wr(DB.collection("chats").doc(c.id).update({name:c.name,sub:c.sub||""}));else{save();renderChatList();renderChat()}}
+function editMsg(c,m){if(DB)wr(DB.collection("msgs").doc(m.id).update({s:m.s||"",t:m.t||"",day:m.day||""}));else{save();renderChat()}}
+function delPat(p){if(DB)wr(DB.collection("patients").doc(p.id).delete());else{S.patients=S.patients.filter(function(x){return x!==p});save();renderRecList();renderRec()}}
+function esc(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function fmt(t){return esc(t).replace(/\[\[(.+?)\]\]/g,'<span class="red">$1</span>').replace(/\n/g,"<br>")}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5)}
+var curC=null,curR=null,edit=false,lastSender="";
+function ask(title,labels,cb,msg,defs){
+  $("#dt").textContent=title;
+  $("#df").innerHTML=(msg?'<p>'+esc(msg)+'</p>':'')+labels.map(function(l,i){return '<label class="hint" style="display:block;margin-top:10px">'+esc(l)+'</label><input '+(l.indexOf('코드')>-1?'type="password" ':'')+'data-i="'+i+'" value="'+esc((defs&&defs[i])||"").replace(/"/g,"&quot;")+'">'}).join("");
+  $("#dlg").style.display="flex";
+  var ins=document.querySelectorAll("#df input");if(ins[0])ins[0].focus();
+  function done(ok){$("#dlg").style.display="none";if(ok)cb([].map.call(ins,function(i){return i.value.trim()}))}
+  $("#dok").onclick=function(){done(true)};$("#dno").onclick=function(){done(false)};
+  ins.forEach(function(i){i.onkeydown=function(e){if(e.key==="Enter")done(true)}});
+}
+function toast(m){var t=$("#toast");t.textContent=m;t.style.display="block";setTimeout(function(){t.style.display="none"},1800)}
+
+// 로그인
+function login(){
+  if($("#pw").value===PASSWORD){$("#login").style.display="none";$("#app").classList.add("on")}
+  else{$("#err").textContent="비밀번호가 올바르지 않습니다.";$("#pw").value=""}
+}
+$("#go").onclick=login;
+$("#pw").onkeydown=function(e){if(e.key==="Enter")login()};
+
+// 탭
+document.querySelectorAll("nav button").forEach(function(b){
+  b.onclick=function(){
+    document.querySelectorAll("nav button").forEach(function(x){x.classList.remove("act")});
+    document.querySelectorAll("section").forEach(function(x){x.classList.remove("on")});
+    b.classList.add("act");$("#"+b.dataset.t).classList.add("on");
+  };
+});
+
+// 편집 모드
+function setEdit(v){edit=v;document.body.classList.toggle("edit",edit);$("#edt").textContent=edit?"✅ 편집 끝내기":"✏️ 편집 모드";renderAll()}
+$("#edt").onclick=function(){
+  if(edit)return setEdit(false);
+  ask("관리자 코드",["관리자 코드"],function(v){if(v[0]===ADMIN)setEdit(true);else toast("코드가 올바르지 않아요")});
+};
+
+// 메신저
+function renderChatList(){
+  var h=S.chats.map(function(c){return '<div class="item'+(c.id===curC?' act':'')+'" data-id="'+c.id+'"><b>'+esc(c.name)+'</b><small>'+esc(c.sub||"")+'</small></div>'}).join("");
+  if(!S.chats.length)h='<div class="item empty">대화방이 없습니다.</div>';
+  $("#clist").innerHTML=h+'<button class="ed" id="addc">＋ 대화방 추가</button>';
+  document.querySelectorAll("#clist .item[data-id]").forEach(function(el){el.onclick=function(){curC=el.dataset.id;renderChat();renderChatList()}});
+  $("#addc").onclick=function(){
+    ask("대화방 추가",["대화방 이름 (예: 3층 간호스테이션)","참여자 또는 설명 (비워도 됨)"],function(v){
+      if(!v[0])return;var c={id:uid(),name:v[0],sub:v[1],log:[]};curC=c.id;addChat(c);
+    });
+  };
+}
+function renderChat(){
+  var c=S.chats.filter(function(x){return x.id===curC})[0];
+  if(!c){$("#cview").innerHTML='<p class="empty">'+(S.chats.length?'왼쪽에서 대화방을 선택하세요.':'아직 대화가 없습니다.')+'</p>';return}
+  var pt=$("#ct"),keep=pt&&lastRoom===curC,kT=keep?pt.value:"",kS=keep?$("#cs").value:"",hadF=keep&&document.activeElement===pt;
+  var h='<h2><span>'+esc(c.name)+'</span><button class="x ed gray" id="renc">이름·참여자 수정</button><button class="x ed" id="delc">대화방 삭제</button></h2>';
+  c.log.forEach(function(m,i){
+    var x='<button class="x ed gray" data-e="'+i+'">✎</button><button class="x ed" data-i="'+i+'">×</button>';
+    if(m.day)h+='<div class="day">— '+esc(m.day)+' —'+x+'</div>';
+    else{var me=m.s==="박춘배";h+='<div class="msg'+(me?' me':'')+'"><span class="who">'+esc(m.s)+x+'</span><div class="b">'+fmt(m.t)+'</div></div>'}
+  });
+  h+='<div class="ed form"><div class="row"><input id="cs" placeholder="보낸 사람" value="'+esc(lastSender)+'" style="max-width:150px"><input id="ct" placeholder="내용 (날짜선은 날짜만 입력)"></div>'+
+     '<div class="row"><button id="send">보내기</button><button class="gray" id="dayb">날짜선으로 추가</button></div>'+
+     '<div class="hint">보낸 사람을 “박춘배”로 쓰면 내 말풍선(오른쪽)으로 나와요. [[가릴 내용]]처럼 쓰면 검게 가려져요.</div></div>';
+  $("#cview").innerHTML=h;
+  var v=$("#cview");v.scrollTop=v.scrollHeight;
+  if(keep){$("#ct").value=kT;$("#cs").value=kS;if(hadF)$("#ct").focus()}
+  lastRoom=curC;
+  document.querySelectorAll("#cview button[data-i]").forEach(function(b){b.onclick=function(){delMsg(c,c.log[+b.dataset.i])}});
+  document.querySelectorAll("#cview button[data-e]").forEach(function(b){b.onclick=function(){var m=c.log[+b.dataset.e];if(m.day)ask("날짜선 수정",["날짜"],function(v){if(v[0]){m.day=v[0];editMsg(c,m)}},"",[m.day]);else ask("말풍선 수정",["보낸 사람","내용"],function(v){if(v[0]&&v[1]){m.s=v[0];m.t=v[1];editMsg(c,m)}},"",[m.s,m.t])}});
+  $("#renc").onclick=function(){ask("대화방 수정",["대화방 이름","참여자 또는 설명"],function(v){if(!v[0])return;c.name=v[0];c.sub=v[1];renameChat(c)},"",[c.name,c.sub||""])};
+  $("#delc").onclick=function(){ask("대화방 삭제",[],function(){curC=null;delChat(c)},"이 대화방을 삭제할까요?")};
+  function add(day){
+    var t=$("#ct").value.trim();if(!t)return;
+    if(day)addMsg(c,{day:t});
+    else{var s=$("#cs").value.trim()||"익명";lastSender=s;addMsg(c,{s:s,t:t})}
+    $("#ct").value="";$("#ct").focus();
+  }
+  $("#send").onclick=function(){add(false)};
+  $("#dayb").onclick=function(){add(true)};
+  $("#ct").onkeydown=function(e){if(e.key==="Enter")add(false)};
+}
+
+// 진료기록
+function renderRecList(){
+  var h=S.patients.map(function(p){return '<div class="item'+(p.id===curR?' act':'')+'" data-id="'+p.id+'"><b>'+esc(p.name||"(이름 없음)")+'</b><small>'+esc(p.no||"")+' · '+esc(p.room||"")+'</small></div>'}).join("");
+  if(!S.patients.length)h='<div class="item empty">환자 기록이 없습니다.</div>';
+  $("#rlist").innerHTML=h+'<button class="ed" id="addp">＋ 환자 추가</button>';
+  document.querySelectorAll("#rlist .item[data-id]").forEach(function(el){el.onclick=function(){curR=el.dataset.id;renderRec();renderRecList()}});
+  $("#addp").onclick=function(){var p={id:uid(),name:"새 환자",no:"",room:"",info:"",dx:"",rx:"",notes:[],ts:Date.now()};curR=p.id;putPat(p);renderRec();renderRecList()};
+}
+function renderRec(){
+  formFor=null;
+  var p=S.patients.filter(function(x){return x.id===curR})[0];
+  if(!p){$("#rview").innerHTML='<p class="empty">'+(S.patients.length?'환자를 선택하면 진료기록이 표시됩니다.':'아직 기록이 없습니다.')+'</p>';return}
+  if(edit){
+    formFor=p.id;
+    var f=function(k,l){return '<label>'+l+'</label><input data-k="'+k+'" value="'+esc(p[k]||"")+'">'};
+    $("#rview").innerHTML='<h2><span>기록 편집</span><button class="x" id="delp">환자 삭제</button></h2><div class="form">'+
+      f("name","이름")+f("no","환자번호")+f("room","병실")+f("info","성별 / 나이")+f("dx","진단명")+f("rx","투약")+
+      '<label>경과기록 (한 줄에 하나씩)</label><textarea id="pn" rows="7">'+esc((p.notes||[]).join("\n"))+'</textarea>'+
+      '<div class="hint">[[가릴 내용]]처럼 쓰면 검게 가려져요.</div><button id="savep">저장</button></div>';
+    $("#savep").onclick=function(){
+      document.querySelectorAll("#rview input[data-k]").forEach(function(i){p[i.dataset.k]=i.value});
+      p.notes=$("#pn").value.split("\n").filter(function(l){return l.trim()});
+      putPat(p);toast("저장했어요.");
+    };
+    $("#delp").onclick=function(){ask("환자 기록 삭제",[],function(){curR=null;delPat(p);renderRec()},"이 환자 기록을 삭제할까요?")};
+    return;
+  }
+  var row=function(l,v){return '<tr><th>'+l+'</th><td>'+fmt(v||"-")+'</td></tr>'};
+  $("#rview").innerHTML='<h2>'+esc(p.name)+'</h2><table>'+row("환자번호",p.no)+row("병실",p.room)+row("성별/나이",p.info)+row("진단명",p.dx)+row("투약",p.rx)+
+    '</table><h2 style="font-size:16px">경과기록</h2><table>'+((p.notes||[]).length?p.notes.map(function(n){return '<tr><td>'+fmt(n)+'</td></tr>'}).join(""):'<tr><td>-</td></tr>')+'</table>';
+}
+
+function renderAll(){renderChatList();renderChat();renderRecList();renderRec()}
+renderAll();
+
+// 공동 편집 (공유 DB)
+function useDb(db){
+  var ch=[],ms=[],ps=[],got=false;
+  function rows(s){return s.docs.map(function(d){var o=Object.assign({},d.data());o.id=d.id;return o})}
+  function rebuild(){
+    got=true;$("#mode").textContent="🟢 공동 편집 중";
+    S={chats:ch.map(function(c){return {id:c.id,name:c.name,sub:c.sub,log:ms.filter(function(m){return m.chat===c.id})}}),patients:ps};
+    if(curC&&!S.chats.some(function(c){return c.id===curC}))curC=null;
+    if(curR&&!S.patients.some(function(p){return p.id===curR}))curR=null;
+    renderChatList();renderChat();renderRecList();
+    if(!(edit&&curR&&formFor===curR))renderRec();
+  }
+  DB=db;$("#mode").textContent="⏳ 연결 중…";
+  setTimeout(function(){if(!got)$("#mode").textContent="⚠️ 연결이 느려요"},10000);
+  var er=function(){$("#mode").textContent="⚠️ 연결 오류"};
+  db.collection("chats").orderBy("ts").onSnapshot(function(s){ch=rows(s);rebuild()},er);
+  db.collection("msgs").orderBy("ts").onSnapshot(function(s){ms=rows(s);rebuild()},er);
+  db.collection("patients").orderBy("ts").onSnapshot(function(s){ps=rows(s);rebuild()},er);
+}
+try{if(window.claude&&claude.use)claude.use("db").then(function(db){if(db)useDb(db)}).catch(function(){})}catch(e){}
+
+// 내보내기 / 가져오기
+function io(mode){
+  $("#io").style.display="flex";
+  $("#iot").textContent=mode==="exp"?"내용 복사해서 보관하세요":"내보낸 내용을 붙여넣으세요";
+  $("#iota").value=mode==="exp"?JSON.stringify({chats:S.chats,patients:S.patients,memos:M}):"";
+  $("#iook").style.display=mode==="exp"?"none":"block";
+  $("#iook").onclick=function(){
+    try{var d=JSON.parse($("#iota").value);if(!d.chats||!d.patients)throw 0;if(DB){var k=Date.now();d.chats.forEach(function(c){addChat(c);c.log.forEach(function(m){m.ts=k++;addMsg(c,m)})});d.patients.forEach(function(p){p.id=p.id||uid();putPat(p)})}else{S=d;save()}
+    if(d.memos&&d.memos.length){if(M.length===1&&!M[0].text&&M[0].title==="메모 1")M=[];d.memos.forEach(function(m){M.push({id:uid(),title:m.title,text:m.text})});saveM();openMemo(M[0].id)}
+    curC=curR=null;renderAll();$("#io").style.display="none"}
+    catch(e){toast("형식이 올바르지 않아요.")}
+  };
+  if(mode==="exp")$("#iota").select();
+}
+$("#loc").onclick=function(){io("imp");var r="";try{r=localStorage.getItem(KEY)||""}catch(e){}$("#iota").value=r;$("#iot").textContent=r?"이 기기에 저장된 내용이에요. [적용]을 누르면 불러와요":"이 기기에 저장된 내용이 없어요"};
+$("#exp").onclick=function(){io("exp")};
+$("#imp").onclick=function(){io("imp")};
+$("#ioc").onclick=function(){$("#io").style.display="none"};
+
+// 메모
+var M=[],curM=null;
+try{M=JSON.parse(localStorage.getItem("escape-notes"))||[]}catch(e){}
+if(!M.length){var oldN="";try{oldN=localStorage.getItem("escape-note")||""}catch(e){}M=[{id:uid(),title:"메모 1",text:oldN}]}
+function saveM(){try{localStorage.setItem("escape-notes",JSON.stringify(M))}catch(e){}}
+function curMemo(){return M.filter(function(x){return x.id===curM})[0]}
+function renderMemoList(){
+  $("#mlist").innerHTML=M.map(function(m){return '<div class="item'+(m.id===curM?' act':'')+'" data-id="'+m.id+'"><b>'+esc(m.title||"(제목 없음)")+'</b></div>'}).join("")+'<button id="addm">＋ 새 메모</button>';
+  document.querySelectorAll("#mlist .item").forEach(function(el){el.onclick=function(){openMemo(el.dataset.id)}});
+  $("#addm").onclick=function(){var m={id:uid(),title:"메모 "+(M.length+1),text:""};M.push(m);saveM();openMemo(m.id)};
+}
+function openMemo(id){curM=id;var m=curMemo();$("#mt").value=m.title;$("#note").value=m.text;renderMemoList()}
+$("#mt").oninput=function(){curMemo().title=this.value;saveM();renderMemoList()};
+$("#note").oninput=function(){curMemo().text=this.value;saveM()};
+$("#mdel").onclick=function(){ask("메모 삭제",[],function(){M=M.filter(function(x){return x.id!==curM});if(!M.length)M=[{id:uid(),title:"메모 1",text:""}];saveM();openMemo(M[0].id)},"이 메모를 삭제할까요?")};
+openMemo(M[0].id);
+</script>
+</body>
+</html>
